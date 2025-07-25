@@ -21,6 +21,7 @@ app.use(
     credentials: true,
   })
 );
+app.options("*", cors()); // Allow preflight for all routes
 
 app.use(logger("dev"));
 app.use(express.json());
