@@ -11,8 +11,16 @@ import restrictionRoutes from "./routes/restrictions.routes";
 import { errorHandler } from "./middleware/error.middleware";
 import screenTimeRoutes from "./routes/screenTime.routes";
 import logsRoutes from "./routes/logs.routes";
+import cors from "cors";
 
 var app = express();
+
+app.use(
+  cors({
+    origin: "*", // or restrict to specific domains
+    credentials: true,
+  })
+);
 
 app.use(logger("dev"));
 app.use(express.json());
