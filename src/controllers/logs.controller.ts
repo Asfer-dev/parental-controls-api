@@ -16,9 +16,15 @@ export const getLogs = async (
   }
 
   const child = await Child.findOne({ _id: id, parentId: (req as any).userId });
-  if (!child) throw new AppError("Child not found or unauthorized", 404);
+  if (!child) {
+    throw new AppError("Child not found or unauthorized", 404);
+  }
 
   const logs = await Log.find({ childId: id }).sort({ timestamp: -1 });
 
-  res.json({ logs });
+  return res.json({
+    status: true,
+    message: "Logs retrieved successfully",
+    data: { logs },
+  });
 };

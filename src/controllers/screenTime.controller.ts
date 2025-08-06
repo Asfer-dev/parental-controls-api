@@ -22,7 +22,11 @@ export const setScreenTimeLimit = async (
   child.restrictions!.screenTimeLimit = screenTimeLimit;
   await child.save();
 
-  res.json({ message: "Screen time limit updated", screenTimeLimit });
+  res.json({
+    status: true,
+    message: "Screen time limit updated",
+    data: { screenTimeLimit },
+  });
 };
 
 export const getScreenTime = async (
@@ -40,9 +44,13 @@ export const getScreenTime = async (
   if (!child) throw new AppError("Child not found or unauthorized", 404);
 
   res.json({
-    isLocked: child.isLocked,
-    screenTimeLimit: child.restrictions!.screenTimeLimit,
-    allowedHours: child.restrictions!.allowedHours,
+    status: true,
+    message: "Screen time settings retrieved",
+    data: {
+      isLocked: child.isLocked,
+      screenTimeLimit: child.restrictions?.screenTimeLimit,
+      allowedHours: child.restrictions?.allowedHours,
+    },
   });
 };
 
@@ -69,7 +77,11 @@ export const lockChild = async (
     `Child account manually locked`
   );
 
-  res.json({ message: "Child has been locked" });
+  res.json({
+    status: true,
+    message: "Child has been locked",
+    data: { isLocked: true },
+  });
 };
 
 export const unlockChild = async (
@@ -95,5 +107,9 @@ export const unlockChild = async (
     `Child account manually unlocked`
   );
 
-  res.json({ message: "Child has been unlocked" });
+  res.json({
+    status: true,
+    message: "Child has been unlocked",
+    data: { isLocked: false },
+  });
 };
