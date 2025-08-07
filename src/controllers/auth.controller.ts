@@ -8,13 +8,11 @@ import Parent from "../models/Parent";
 export const requestVerification = async (req: Request, res: Response) => {
   const { email } = req.body;
   if (!email)
-    return res
-      .status(400)
-      .json({
-        message: "Email is required",
-        status: false,
-        error: "Failed to send verification code to email",
-      });
+    return res.status(400).json({
+      message: "Email is required",
+      status: false,
+      error: "Failed to send verification code to email",
+    });
 
   const code = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit
 
@@ -43,37 +41,29 @@ export const verifyEmail = async (req: Request, res: Response) => {
   const record = await EmailVerification.findOne({ email });
 
   if (!record)
-    return res
-      .status(404)
-      .json({
-        message: "Verification record not found",
-        status: false,
-        error: "Failed to verify email",
-      });
+    return res.status(404).json({
+      message: "Verification record not found",
+      status: false,
+      error: "Failed to verify email",
+    });
   if (record.verified)
-    return res
-      .status(400)
-      .json({
-        message: "Email already verified",
-        status: false,
-        error: "Failed to verify email",
-      });
+    return res.status(400).json({
+      message: "Email already verified",
+      status: false,
+      error: "Failed to verify email",
+    });
   if (record.code !== code)
-    return res
-      .status(400)
-      .json({
-        message: "Invalid verification code",
-        status: false,
-        error: "Failed to verify email",
-      });
+    return res.status(400).json({
+      message: "Invalid verification code",
+      status: false,
+      error: "Failed to verify email",
+    });
   if (new Date() > record.expiresAt)
-    return res
-      .status(400)
-      .json({
-        message: "Code expired",
-        status: false,
-        error: "Failed to verify email",
-      });
+    return res.status(400).json({
+      message: "Code expired",
+      status: false,
+      error: "Failed to verify email",
+    });
 
   record.verified = true;
   await record.save();
@@ -93,24 +83,20 @@ export const register = async (req: Request, res: Response) => {
 
   const existingVerification = await EmailVerification.findOne({ email });
   if (!existingVerification || !existingVerification.verified) {
-    return res
-      .status(400)
-      .json({
-        message: "Email not verified",
-        status: false,
-        error: "Failed to register user",
-      });
+    return res.status(400).json({
+      message: "Email not verified",
+      status: false,
+      error: "Failed to register user",
+    });
   }
 
   const existingUser = await Parent.findOne({ email });
   if (existingUser)
-    return res
-      .status(409)
-      .json({
-        message: "User already exists",
-        status: false,
-        error: "Failed to register user",
-      });
+    return res.status(409).json({
+      message: "User already exists",
+      status: false,
+      error: "Failed to register user",
+    });
 
   const salt = await bcrypt.genSalt(10);
   const passwordHash = await bcrypt.hash(password, salt);
@@ -126,50 +112,78 @@ export const register = async (req: Request, res: Response) => {
     }
   );
 
-  return res
-    .status(201)
-    .json({
-      status: true,
-      message: "Registrered successfully",
-      data: { token },
-    });
+  return res.status(201).json({
+    status: true,
+    message: "Registrered successfully",
+    data: { token },
+  });
 };
 
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   if (!email || !password)
-    return res
-      .status(400)
-      .json({
-        message: "Email and password are required",
-        status: false,
-        error: "Failed to login",
-      });
+    return res.status(400).json({
+      message: "Email and password are required",
+      status: false,
+      error: "Failed to login",
+    });
 
   const user = await Parent.findOne({ email });
   if (!user)
-    return res
-      .status(404)
-      .json({
-        message: "User not found",
-        status: false,
-        error: "Failed login",
-      });
+    return res.status(404).json({
+      message: "User not found",
+      status: false,
+      error: "Failed login",
+    });
 
   const isMatch = await bcrypt.compare(password, user.passwordHash);
   if (!isMatch)
-    return res
-      .status(401)
-      .json({
-        message: "Invalid credentials",
-        status: false,
-        error: "Failed to login",
-      });
+    return res.status(401).json({
+      message: "Invalid credentials",
+      status: false,
+      error: "Failed to login",
+    });
 
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET as string, {
     expiresIn: "7d",
   });
 
   return res.json({ status: true, message: "login successful", data: token });
+};
+
+export const deleteAccount = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).userId;
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+        status: false,
+        error: "Failed to delete account",
+      });
+    }
+
+    const user = await Parent.findByIdAndDelete(userId);
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+        status: false,
+        error: "Failed to delete account",
+      });
+    }
+
+    await EmailVerification.deleteOne({ email: user.email });
+
+    return res.json({
+      status: true,
+      message: "Account deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete Account Error:", error);
+    return res.status(500).json({
+      message: "Internal server error",
+      status: false,
+      error: "Failed to delete account",
+    });
+  }
 };
