@@ -14,6 +14,16 @@ export const requestVerification = async (req: Request, res: Response) => {
       error: "Failed to send verification code to email",
     });
 
+  const user = await Parent.findOne({ email });
+  if (user) {
+    return res.status(400).json({
+      message: "Email is alrady registered. Please login",
+      status: false,
+      error:
+        "Failed to send verification code to email. Email already registered.",
+    });
+  }
+
   const code = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit
 
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
