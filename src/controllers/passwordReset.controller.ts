@@ -154,17 +154,9 @@ export const resetPassword = async (req: Request, res: Response) => {
   }
 
   const record = await PasswordReset.findOne({ email }).sort({ createdAt: -1 });
-  if (!record || record.usedAt || new Date() > record.expiresAt) {
+  if (!record || new Date() > record.expiresAt) {
     return res.status(400).json({
       message: "Invalid or expired code",
-      status: false,
-      error: "Failed to reset password",
-    });
-  }
-
-  if (record.attempts >= MAX_RESET_ATTEMPTS) {
-    return res.status(429).json({
-      message: "Too many attempts. Request a new code.",
       status: false,
       error: "Failed to reset password",
     });
@@ -173,6 +165,14 @@ export const resetPassword = async (req: Request, res: Response) => {
   if (!record.usedAt) {
     return res.status(400).json({
       message: "Code not verified",
+      status: false,
+      error: "Failed to reset password",
+    });
+  }
+
+  if (record.attempts >= MAX_RESET_ATTEMPTS) {
+    return res.status(429).json({
+      message: "Too many attempts. Request a new code.",
       status: false,
       error: "Failed to reset password",
     });
