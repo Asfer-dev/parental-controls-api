@@ -12,6 +12,7 @@ import { errorHandler } from "./middleware/error.middleware";
 import screenTimeRoutes from "./routes/screenTime.routes";
 import logsRoutes from "./routes/logs.routes";
 import sessionRoutes from "./routes/session.routes";
+import passwordResetRoutes from "./routes/passwordReset.routes";
 import cors from "cors";
 
 var app = express();
@@ -37,6 +38,7 @@ app.use("/children", restrictionRoutes);
 app.use("/children", screenTimeRoutes);
 app.use("/children", logsRoutes);
 app.use("/", sessionRoutes);
+app.use("/", passwordResetRoutes);
 
 app.use(errorHandler);
 

@@ -14,6 +14,15 @@ export const requestVerification = async (req: Request, res: Response) => {
       error: "Failed to send verification code to email",
     });
 
+  const record = await EmailVerification.findOne({ email });
+
+  if (record)
+    return res.status(404).json({
+      message: "Email already verified",
+      status: false,
+      error: "Failed to verify email. Email already verified",
+    });
+
   const user = await Parent.findOne({ email });
   if (user) {
     return res.status(400).json({
