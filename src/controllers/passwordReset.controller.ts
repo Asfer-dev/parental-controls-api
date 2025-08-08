@@ -116,6 +116,10 @@ export const verifyResetCode = async (req: Request, res: Response) => {
     });
   }
 
+  // Consume the reset record (single-use)
+  record.usedAt = new Date();
+  await record.save();
+
   return res.json({
     message: "Code verified",
     status: true,
@@ -125,13 +129,13 @@ export const verifyResetCode = async (req: Request, res: Response) => {
 
 /**
  * POST /auth/reset-password
- * body: { email, code, newPassword }
+ * body: { email, newPassword }
  * Verifies the code and sets the new password atomically.
  */
 export const resetPassword = async (req: Request, res: Response) => {
-  const { email, code, newPassword } = req.body;
+  const { email, newPassword } = req.body;
 
-  if (!email || !code || !newPassword) {
+  if (!email || !newPassword) {
     return res.status(400).json({
       message: "Email, code, and newPassword are required",
       status: false,
@@ -166,20 +170,13 @@ export const resetPassword = async (req: Request, res: Response) => {
     });
   }
 
-  const isMatch = await bcrypt.compare(code, record.codeHash);
-  if (!isMatch) {
-    record.attempts += 1;
-    await record.save();
+  if (!record.usedAt) {
     return res.status(400).json({
-      message: "Invalid code",
+      message: "Code not verified",
       status: false,
       error: "Failed to reset password",
     });
   }
-
-  // Consume the reset record (single-use)
-  record.usedAt = new Date();
-  await record.save();
 
   // Hash the new password and save
   const salt = await bcrypt.genSalt(10);

@@ -16,7 +16,7 @@ export const requestVerification = async (req: Request, res: Response) => {
 
   const record = await EmailVerification.findOne({ email });
 
-  if (record)
+  if (record && record.verified)
     return res.status(404).json({
       message: "Email already verified",
       status: false,
