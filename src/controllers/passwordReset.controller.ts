@@ -53,7 +53,7 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
   return res.json({
     message: "If that email exists, a reset code has been sent.",
     status: true,
-    data: {},
+    data: { code },
   });
 };
 
