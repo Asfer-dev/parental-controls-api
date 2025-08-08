@@ -173,16 +173,17 @@ export const login = async (req: Request, res: Response) => {
 
 export const deleteAccount = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).userId;
-    if (!userId) {
-      return res.status(401).json({
-        message: "Unauthorized",
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        message: "Email is required",
         status: false,
         error: "Failed to delete account",
       });
     }
 
-    const user = await Parent.findByIdAndDelete(userId);
+    const user = await Parent.findOneAndDelete({ email });
     if (!user) {
       return res.status(404).json({
         message: "User not found",

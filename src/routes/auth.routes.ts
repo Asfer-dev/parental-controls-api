@@ -18,6 +18,6 @@ router.post("/register", catchAsync(register));
 
 router.post("/login", catchAsync(login));
 
-router.delete("/account", authenticateToken, catchAsync(deleteAccount));
+router.delete("/account", catchAsync(deleteAccount));
 
 export default router;
